@@ -1,0 +1,15 @@
+#ifndef _WAVNGN_DEFINITIONS_
+#define _WAVNGN_DEFINITIONS_
+
+#define PI 3.14159265
+
+#define _CFG_SAMPLE_TYPE int16_t
+#define _CFG_SAMPLE_BITS 16
+#define _CFG_SAMPLE_MAX 32767
+#define _CFG_SAMPLE_MIN -32768
+#define _CFG_CHANNELS 2
+#define _CFG_SAMPLE_RATE 44100
+
+#define sample_t _CFG_SAMPLE_TYPE
+
+#endif	// _WAVNGN_DEFINITIONS_
