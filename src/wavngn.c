@@ -9,7 +9,7 @@
 #include "definitions.h"
 
 void AppendToneToPCM(sample_t **pcmBuffer, int *numSamples, float frequency,
-					 int durationSeconds) {
+					 int durationSeconds, AudioModifiers mods) {
 	int samplesToAdd = durationSeconds * _CFG_SAMPLE_RATE;
 	int newNumSamples = *numSamples + samplesToAdd;
 	*pcmBuffer = realloc(*pcmBuffer, newNumSamples * 2 * sizeof(sample_t));
@@ -21,8 +21,21 @@ void AppendToneToPCM(sample_t **pcmBuffer, int *numSamples, float frequency,
 
 	for (int i = 0; i < samplesToAdd; i++) {
 		double t = (double)(*numSamples + i) / _CFG_SAMPLE_RATE;
-		double amplitude = sin(2 * PI * frequency * t);
-		int16_t sample = (sample_t)(amplitude * _CFG_SAMPLE_MAX);
+		double arg = 2 * PI * frequency * t;
+		double amplitude = 0;
+		switch (mods.function) {
+			case AF_SINE:
+				amplitude = sin(arg);
+				break;
+			case AF_SQUARE:
+				amplitude = sin(arg) > 0 ? 1 : -1;
+				break;
+			default:
+				printf("Unknown audio function\n");
+				exit(1);
+		}
+		amplitude *= mods.volume;
+		sample_t sample = (sample_t)(amplitude * _CFG_SAMPLE_MAX);
 
 		for (int j = 0; j < _CFG_CHANNELS; ++j)
 			(*pcmBuffer)[(*numSamples + i) * _CFG_CHANNELS + j] = sample;
