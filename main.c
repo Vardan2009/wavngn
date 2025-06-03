@@ -7,7 +7,7 @@ int main() {
 	int pcmPtr = 0;
 	int numSamples = 0;
 
-	AudioModifiers modifiers = {AF_SINE, 0.5, 0.5, 0.2, 1};
+	AudioModifiers modifiers = {AF_SINE, 0.5, 0.2, 0.2, 1, 5, 0.5};
 
 	AppendToneToPCM(&pcm, &pcmPtr, &numSamples, 440.0f, 1,
 					modifiers);	 // A4, 1 sec

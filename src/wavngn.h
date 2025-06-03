@@ -44,6 +44,8 @@ typedef struct {
 	double volume;
 
 	double attack, decay, release;
+
+	double vibratoFrequency, vibratoAmplitude;
 } AudioModifiers;
 
 int AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,

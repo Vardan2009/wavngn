@@ -64,19 +64,7 @@ int AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
 
 	for (int i = 0; i < samplesToAdd; i++) {
 		double t = (double)(*pcmPtr + i) / _CFG_SAMPLE_RATE;
-		double arg = 2 * PI * frequency * t;
-		double amplitude = 0;
-		switch (mods.function) {
-			case AF_SINE:
-				amplitude = sin(arg);
-				break;
-			case AF_SQUARE:
-				amplitude = sin(arg) > 0 ? 1 : -1;
-				break;
-			default:
-				fprintf(stderr, "Unknown audio function\n");
-				exit(1);
-		}
+
 		double env = 1.0;
 		double sampleTime = (double)i / _CFG_SAMPLE_RATE;
 		if (mods.attack > 0 && sampleTime < mods.attack) {
@@ -95,6 +83,23 @@ int AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
 			} else {
 				env = 0.0;
 			}
+		}
+
+		double arg =
+			2 * PI * frequency * t +
+			mods.vibratoAmplitude * sin(2 * PI * mods.vibratoFrequency * t);
+
+		double amplitude = 0;
+		switch (mods.function) {
+			case AF_SINE:
+				amplitude = sin(arg);
+				break;
+			case AF_SQUARE:
+				amplitude = sin(arg) > 0 ? 1 : -1;
+				break;
+			default:
+				fprintf(stderr, "Unknown audio function\n");
+				exit(1);
 		}
 
 		amplitude *= mods.volume * env;
