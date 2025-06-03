@@ -1,8 +1,16 @@
 cmake_minimum_required(VERSION 3.5)
 project(wavngn)
 
-add_executable(${PROJECT_NAME} main.c src/wavngn.c)
+add_library(wavngn STATIC
+    src/wavngn.c
+)
+
+add_executable(wavngn_test
+    main.c
+)
+
+target_link_libraries(wavngn_test PRIVATE wavngn)
 
 if(UNIX AND NOT APPLE)
-    target_link_libraries(${PROJECT_NAME} m)
+    target_link_libraries(wavngn_test PRIVATE m)
 endif()
