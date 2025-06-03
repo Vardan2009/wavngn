@@ -104,10 +104,12 @@ int AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
 				exit(1);
 		}
 
-		amplitude *= mods.volume * env;
-		sample_t sample = (sample_t)(amplitude * _CFG_SAMPLE_MAX);
+		amplitude *= env;
 
 		for (int j = 0; j < _CFG_CHANNELS; ++j) {
+			sample_t sample = (sample_t)(amplitude * mods.channelVolumes[j] *
+										 _CFG_SAMPLE_MAX);
+
 			sample_t *dest = &(*pcmBuffer)[(*pcmPtr + i) * _CFG_CHANNELS + j];
 			*dest = mixSamples(sample, *dest);
 		}

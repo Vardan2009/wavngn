@@ -41,7 +41,7 @@ typedef enum { AF_SINE, AF_SQUARE } audiofn_t;
 
 typedef struct {
 	audiofn_t function;
-	double volume;
+	double channelVolumes[_CFG_CHANNELS];
 
 	double attack, decay, release;
 
