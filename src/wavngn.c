@@ -8,9 +8,24 @@
 
 #include "definitions.h"
 
-void AppendToneToPCM(sample_t **pcmBuffer, int *numSamples, float frequency,
-					 int durationSeconds, AudioModifiers mods) {
-	int samplesToAdd = durationSeconds * _CFG_SAMPLE_RATE;
+sample_t mixSamples(sample_t x, sample_t y) {
+	double x_d = (double)x / 32768.0;
+	double y_d = (double)y / 32768.0;
+	double mixed = x_d + y_d;
+
+	if (mixed > 1.0)
+		mixed = 1.0;
+	else if (mixed < -1.0)
+		mixed = -1.0;
+
+	return (sample_t)round(mixed * 32767.0);
+}
+
+void AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
+					 float frequency, float durationSeconds,
+					 AudioModifiers mods) {
+	int samplesToAdd = (durationSeconds + mods.release) * _CFG_SAMPLE_RATE;
+	int samplesToAddToPtr = durationSeconds * _CFG_SAMPLE_RATE;
 
 	if (samplesToAdd < 0) {
 		fprintf(stderr, "Duration in seconds must be non-negative\n");
@@ -32,7 +47,14 @@ void AppendToneToPCM(sample_t **pcmBuffer, int *numSamples, float frequency,
 	}
 
 	sample_t *newBuffer =
-		realloc(*pcmBuffer, newNumSamples * 2 * sizeof(sample_t));
+		realloc(*pcmBuffer, newNumSamples * _CFG_CHANNELS * sizeof(sample_t));
+
+	if (newBuffer && newNumSamples > *numSamples) {
+		size_t oldSize = *numSamples * 2 * sizeof(sample_t);
+		size_t newSize = newNumSamples * 2 * sizeof(sample_t);
+		memset((char *)newBuffer + oldSize, 0, newSize - oldSize);
+	}
+
 	if (!newBuffer) {
 		perror("Failed to allocate PCM buffer");
 		free(*pcmBuffer);
@@ -41,7 +63,7 @@ void AppendToneToPCM(sample_t **pcmBuffer, int *numSamples, float frequency,
 	*pcmBuffer = newBuffer;
 
 	for (int i = 0; i < samplesToAdd; i++) {
-		double t = (double)(*numSamples + i) / _CFG_SAMPLE_RATE;
+		double t = (double)(*pcmPtr + i) / _CFG_SAMPLE_RATE;
 		double arg = 2 * PI * frequency * t;
 		double amplitude = 0;
 		switch (mods.function) {
@@ -55,14 +77,37 @@ void AppendToneToPCM(sample_t **pcmBuffer, int *numSamples, float frequency,
 				fprintf(stderr, "Unknown audio function\n");
 				exit(1);
 		}
-		amplitude *= mods.volume;
+		double env = 1.0;
+		double sampleTime = (double)i / _CFG_SAMPLE_RATE;
+		if (mods.attack > 0 && sampleTime < mods.attack) {
+			env = sampleTime / mods.attack;
+		} else if (mods.decay > 0 && sampleTime < (mods.attack + mods.decay) &&
+				   sampleTime >= mods.attack) {
+			double decayTime = sampleTime - mods.attack;
+			env = 1.0 - (decayTime / mods.decay) * (1.0 - 0.7);
+		} else if (mods.decay > 0 && sampleTime >= (mods.attack + mods.decay) &&
+				   sampleTime < (durationSeconds)) {
+			env = 0.7;
+		} else if (mods.release > 0 && sampleTime >= durationSeconds) {
+			double releaseTime = sampleTime - durationSeconds;
+			if (releaseTime < mods.release) {
+				env = 0.7 * (1.0 - (releaseTime / mods.release));
+			} else {
+				env = 0.0;
+			}
+		}
+
+		amplitude *= mods.volume * env;
 		sample_t sample = (sample_t)(amplitude * _CFG_SAMPLE_MAX);
 
-		for (int j = 0; j < _CFG_CHANNELS; ++j)
-			(*pcmBuffer)[(*numSamples + i) * _CFG_CHANNELS + j] = sample;
+		for (int j = 0; j < _CFG_CHANNELS; ++j) {
+			sample_t *dest = &(*pcmBuffer)[(*pcmPtr + i) * _CFG_CHANNELS + j];
+			*dest = mixSamples(sample, *dest);
+		}
 	}
 
 	*numSamples = newNumSamples;
+	*pcmPtr += samplesToAddToPtr;
 }
 
 void WriteWAVFromPCM(const char *filename, sample_t *pcmBuffer,

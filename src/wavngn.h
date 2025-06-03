@@ -42,10 +42,13 @@ typedef enum { AF_SINE, AF_SQUARE } audiofn_t;
 typedef struct {
 	audiofn_t function;
 	double volume;
+
+	double attack, decay, release;
 } AudioModifiers;
 
-void AppendToneToPCM(sample_t **pcmBuffer, int *numSamples, float frequency,
-					 int durationSeconds, AudioModifiers mods);
+void AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
+					 float frequency, float durationSeconds,
+					 AudioModifiers mods);
 
 void WriteWAVFromPCM(const char *filename, sample_t *pcmBuffer, int numSamples);
 
