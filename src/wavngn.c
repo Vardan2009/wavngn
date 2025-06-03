@@ -11,13 +11,34 @@
 void AppendToneToPCM(sample_t **pcmBuffer, int *numSamples, float frequency,
 					 int durationSeconds, AudioModifiers mods) {
 	int samplesToAdd = durationSeconds * _CFG_SAMPLE_RATE;
-	int newNumSamples = *numSamples + samplesToAdd;
-	*pcmBuffer = realloc(*pcmBuffer, newNumSamples * 2 * sizeof(sample_t));
 
-	if (!*pcmBuffer) {
-		perror("Failed to allocate PCM buffer");
+	if (samplesToAdd < 0) {
+		fprintf(stderr, "Duration in seconds must be non-negative\n");
 		exit(1);
 	}
+
+	if (samplesToAdd < 0 || durationSeconds > INT_MAX / _CFG_SAMPLE_RATE) {
+		fprintf(stderr,
+				"Arithmetic overflow detected in durationSeconds * "
+				"_CFG_SAMPLE_RATE\n");
+		exit(1);
+	}
+
+	int newNumSamples = *numSamples + samplesToAdd;
+	if (newNumSamples < *numSamples) {
+		fprintf(stderr,
+				"Arithmetic overflow detected in *numSamples + samplesToAdd\n");
+		exit(1);
+	}
+
+	sample_t *newBuffer =
+		realloc(*pcmBuffer, newNumSamples * 2 * sizeof(sample_t));
+	if (!newBuffer) {
+		perror("Failed to allocate PCM buffer");
+		free(*pcmBuffer);
+		exit(1);
+	}
+	*pcmBuffer = newBuffer;
 
 	for (int i = 0; i < samplesToAdd; i++) {
 		double t = (double)(*numSamples + i) / _CFG_SAMPLE_RATE;
@@ -31,7 +52,7 @@ void AppendToneToPCM(sample_t **pcmBuffer, int *numSamples, float frequency,
 				amplitude = sin(arg) > 0 ? 1 : -1;
 				break;
 			default:
-				printf("Unknown audio function\n");
+				fprintf(stderr, "Unknown audio function\n");
 				exit(1);
 		}
 		amplitude *= mods.volume;
