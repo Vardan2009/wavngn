@@ -21,9 +21,9 @@ sample_t mixSamples(sample_t x, sample_t y) {
 	return (sample_t)round(mixed * 32767.0);
 }
 
-void AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
-					 float frequency, float durationSeconds,
-					 AudioModifiers mods) {
+int AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
+					float frequency, float durationSeconds,
+					AudioModifiers mods) {
 	int samplesToAdd = (durationSeconds + mods.release) * _CFG_SAMPLE_RATE;
 	int samplesToAddToPtr = durationSeconds * _CFG_SAMPLE_RATE;
 
@@ -107,7 +107,7 @@ void AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
 	}
 
 	*numSamples = newNumSamples;
-	*pcmPtr += samplesToAddToPtr;
+	return samplesToAddToPtr;
 }
 
 void WriteWAVFromPCM(const char *filename, sample_t *pcmBuffer,

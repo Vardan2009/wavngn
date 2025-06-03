@@ -46,9 +46,9 @@ typedef struct {
 	double attack, decay, release;
 } AudioModifiers;
 
-void AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
-					 float frequency, float durationSeconds,
-					 AudioModifiers mods);
+int AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
+					float frequency, float durationSeconds,
+					AudioModifiers mods);
 
 void WriteWAVFromPCM(const char *filename, sample_t *pcmBuffer, int numSamples);
 

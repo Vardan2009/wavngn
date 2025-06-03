@@ -11,8 +11,9 @@ int main() {
 
 	AppendToneToPCM(&pcm, &pcmPtr, &numSamples, 440.0f, 1,
 					modifiers);	 // A4, 1 sec
-	AppendToneToPCM(&pcm, &pcmPtr, &numSamples, 660.0f, 1,
-					modifiers);	 // E5, 1 sec
+
+	pcmPtr += AppendToneToPCM(&pcm, &pcmPtr, &numSamples, 660.0f, 1,
+							  modifiers);  // E5, 1 sec
 
 	WriteWAVFromPCM("output.wav", pcm, numSamples);
 
