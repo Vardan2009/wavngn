@@ -39,10 +39,12 @@ int AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
 		exit(1);
 	}
 
-	int newNumSamples = *numSamples + samplesToAdd;
+	int deltaSamples = *pcmPtr + samplesToAdd - *numSamples;
+
+	int newNumSamples = *numSamples + deltaSamples;
 	if (newNumSamples < *numSamples) {
 		fprintf(stderr,
-				"Arithmetic overflow detected in *numSamples + samplesToAdd\n");
+				"Arithmetic overflow detected in *numSamples + deltaSamples\n");
 		exit(1);
 	}
 
