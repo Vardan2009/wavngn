@@ -11,6 +11,7 @@ add_executable(wavngn_test
 
 target_link_libraries(wavngn_test PRIVATE wavngn)
 
+
 if(UNIX AND NOT APPLE)
-    target_link_libraries(wavngn_test PRIVATE m)
+    target_link_libraries(wavngn_test m)
 endif()
