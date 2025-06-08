@@ -1,5 +1,6 @@
 #include "wavngn.h"
 
+#include <limits.h>
 #include <malloc.h>
 #include <math.h>
 #include <stdio.h>
