@@ -13,5 +13,5 @@ target_link_libraries(wavngn_test PRIVATE wavngn)
 
 
 if(UNIX AND NOT APPLE)
-    link_libraries(m)
+    target_link_libraries(wavngn m)
 endif()
