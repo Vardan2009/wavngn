@@ -22,6 +22,52 @@ sample_t mixSamples(sample_t x, sample_t y) {
 	return (sample_t)round(mixed * 32767.0);
 }
 
+int AppendPCMToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
+				   sample_t *srcPcm, int srcNumSamples) {
+	if (srcNumSamples <= 0) {
+		fprintf(stderr, "Source PCM must have a positive number of samples\n");
+		exit(1);
+	}
+
+	int samplesToAdd = srcNumSamples;
+	int deltaSamples = *pcmPtr + samplesToAdd - *numSamples;
+
+	int newNumSamples = *numSamples + deltaSamples;
+	if (newNumSamples < *numSamples) {
+		fprintf(stderr,
+				"Arithmetic overflow detected in *numSamples + deltaSamples\n");
+		exit(1);
+	}
+
+	sample_t *newBuffer =
+		realloc(*pcmBuffer, newNumSamples * _CFG_CHANNELS * sizeof(sample_t));
+
+	if (newBuffer && newNumSamples > *numSamples) {
+		size_t oldSize = *numSamples * 2 * sizeof(sample_t);
+		size_t newSize = newNumSamples * 2 * sizeof(sample_t);
+		memset((char *)newBuffer + oldSize, 0, newSize - oldSize);
+	}
+
+	if (!newBuffer) {
+		perror("Failed to allocate PCM buffer");
+		free(*pcmBuffer);
+		exit(1);
+	}
+	*pcmBuffer = newBuffer;
+
+	for (int i = 0; i < samplesToAdd; i++) {
+		for (int j = 0; j < _CFG_CHANNELS; ++j) {
+			sample_t sample = srcPcm[i * _CFG_CHANNELS + j];
+			sample_t mixedSample = mixSamples(
+				sample, (*pcmBuffer)[(*pcmPtr + i) * _CFG_CHANNELS + j]);
+			(*pcmBuffer)[(*pcmPtr + i) * _CFG_CHANNELS + j] = mixedSample;
+		}
+	}
+
+	*numSamples = newNumSamples;
+	return samplesToAdd;
+}
+
 int AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
 					float frequency, float durationSeconds,
 					AudioModifiers mods) {

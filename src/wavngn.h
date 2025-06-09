@@ -48,6 +48,9 @@ typedef struct {
 	double vibratoFrequency, vibratoAmplitude;
 } AudioModifiers;
 
+int AppendPCMToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
+				   sample_t *srcPcm, int srcNumSamples);
+
 int AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
 					float frequency, float durationSeconds,
 					AudioModifiers mods);

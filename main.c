@@ -23,10 +23,16 @@ int main() {
 	pcmPtr += AppendToneToPCM(&pcm, &pcmPtr, &numSamples, 660.0f, 1,
 							  modifiers);  // E5, 1 sec
 
-	WriteWAVFromPCM("output.wav", pcm, numSamples);
+	sample_t *new = NULL;
+	int newPtr = 0;
+	int newSamples = 0;
+	AppendPCMToPCM(&new, &newPtr, &newSamples, pcm, numSamples);
+
+	WriteWAVFromPCM("output.wav", new, newSamples);
 
 	system("ffplay -nodisp -autoexit output.wav");
 
 	free(pcm);
+	free(new);
 	return 0;
 }
