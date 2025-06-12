@@ -33,11 +33,7 @@ int AppendPCMToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
 	int deltaSamples = *pcmPtr + samplesToAdd - *numSamples;
 
 	int newNumSamples = *numSamples + deltaSamples;
-	if (newNumSamples < *numSamples) {
-		fprintf(stderr,
-				"Arithmetic overflow detected in *numSamples + deltaSamples\n");
-		exit(1);
-	}
+	if (newNumSamples <= *numSamples) newNumSamples = *numSamples;
 
 	sample_t *newBuffer =
 		realloc(*pcmBuffer, newNumSamples * _CFG_CHANNELS * sizeof(sample_t));
@@ -82,18 +78,14 @@ int AppendToneToPCM(sample_t **pcmBuffer, int *pcmPtr, int *numSamples,
 	if (samplesToAdd < 0 || durationSeconds > INT_MAX / _CFG_SAMPLE_RATE) {
 		fprintf(stderr,
 				"Arithmetic overflow detected in durationSeconds * "
-				"_CFG_SAMPLE_RATE\n");
+				"_CFG_SAMPLE_RATE in AppendToneToPCM\n");
 		exit(1);
 	}
 
 	int deltaSamples = *pcmPtr + samplesToAdd - *numSamples;
 
 	int newNumSamples = *numSamples + deltaSamples;
-	if (newNumSamples < *numSamples) {
-		fprintf(stderr,
-				"Arithmetic overflow detected in *numSamples + deltaSamples\n");
-		exit(1);
-	}
+	if (newNumSamples <= *numSamples) newNumSamples = *numSamples;
 
 	sample_t *newBuffer =
 		realloc(*pcmBuffer, newNumSamples * _CFG_CHANNELS * sizeof(sample_t));
